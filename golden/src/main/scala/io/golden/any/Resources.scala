@@ -1,4 +1,4 @@
-package io.yannick_cw.golden
+package io.golden.any
 
 import java.io.File
 

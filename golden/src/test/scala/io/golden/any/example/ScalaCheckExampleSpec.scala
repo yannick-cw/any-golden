@@ -1,7 +1,7 @@
-package io.yannick_cw.golden.example
+package io.golden.any.example
 
-import io.yannick_cw.golden.ChangeDetector
-import io.yannick_cw.golden.example.UserDataInstances.{arbitrary, jsonCodec}
+import UserDataInstances.{arbitrary, jsonCodec}
+import io.golden.any.ChangeDetector
 import org.scalacheck.Properties
 
 object ScalaCheckExampleSpec extends Properties("Models") {

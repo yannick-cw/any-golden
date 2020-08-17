@@ -1,9 +1,9 @@
-package io.yannick_cw.golden.example
+package io.golden.any.example
 
 import java.util.UUID
 
 import io.circe.generic.auto._
-import io.yannick_cw.golden.ChangeDetector.{Codec, ReadErr}
+import io.golden.any.ChangeDetector.{Codec, ReadErr}
 import org.scalacheck.{Arbitrary, Gen}
 
 case class UserData(id: UUID, name: String, age: Option[Int])

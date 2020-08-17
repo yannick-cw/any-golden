@@ -1,6 +1,6 @@
-package io.yannick_cw.golden
+package io.golden.any
 
-import io.yannick_cw.golden.ChangeDetector.Codec
+import ChangeDetector.Codec
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 

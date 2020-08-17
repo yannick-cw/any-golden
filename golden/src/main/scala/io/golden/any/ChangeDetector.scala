@@ -1,7 +1,7 @@
-package io.yannick_cw.golden
+package io.golden.any
 
 import cats.implicits.{catsStdInstancesForTry, toFunctorOps}
-import io.yannick_cw.golden.ChangeDetector.Codec
+import ChangeDetector.Codec
 import org.scalacheck.util.Pretty
 import org.scalacheck.{Arbitrary, Prop}
 

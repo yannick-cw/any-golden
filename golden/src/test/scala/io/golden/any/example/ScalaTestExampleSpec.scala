@@ -1,7 +1,7 @@
-package io.yannick_cw.golden.example
+package io.golden.any.example
 
-import io.yannick_cw.golden.ChangeDetector
-import io.yannick_cw.golden.example.UserDataInstances.{arbitrary, bsonCodec}
+import UserDataInstances.{arbitrary, bsonCodec}
+import io.golden.any.ChangeDetector
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.Checkers.check

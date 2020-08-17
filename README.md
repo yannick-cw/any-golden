@@ -49,7 +49,7 @@ import org.scalacheck.{Arbitrary, Gen}
 2. Define a `Codec[Userdata]` (here we use circe for json)
 ```Scala
 import io.circe.generic.auto._
-import io.yannick_cw.golden.ChangeDetector.{Codec, ReadErr}
+import io.golden.any.ChangeDetector.{Codec, ReadErr}
 
   implicit val jsonCodec: Codec[UserData] = new Codec[UserData] {
     override val codecFor: String           = "json"
@@ -64,8 +64,8 @@ import io.yannick_cw.golden.ChangeDetector.{Codec, ReadErr}
 
 3. Run the tests in scalatest or scalacheck
 ```Scala
-import io.yannick_cw.golden.ChangeDetector
-import io.yannick_cw.golden.example.UserDataInstances.{arbitrary, jsonCodec}
+import io.golden.any.ChangeDetector
+import io.golden.any.example.UserDataInstances.{arbitrary, jsonCodec}
 import org.scalacheck.Properties
 
 object ScalaCheckExampleSpec extends Properties("Models") {
@@ -74,8 +74,8 @@ object ScalaCheckExampleSpec extends Properties("Models") {
 ```
 
 ```Scala
-import io.yannick_cw.golden.ChangeDetector
-import io.yannick_cw.golden.example.UserDataInstances.{arbitrary, jsonCodec}
+import io.golden.any.ChangeDetector
+import io.golden.any.example.UserDataInstances.{arbitrary, jsonCodec}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.Checkers.check
@@ -119,7 +119,7 @@ Okay so let's see what happens if you change your API and add the email field:
  to UserData maybe there is a new required field or a field name changed?
     Attempt to decode value on failed cursor: DownField(email)
     If you want to accept the changes please delete
- /Users/me/any-golden/golden/src/test/resources/io/yannick_cw/golden/exampleUserData.json and rerun the tests.
+ /Users/me/any-golden/golden/src/test/resources/io/golden/any/exampleUserData.json and rerun the tests.
 ```
 
 Okay but what about when we add an optional `email: Option[String]` field:
@@ -131,7 +131,7 @@ UserData(bf30c34b-0ef7-4903-ae28-ae1eb5d3a2a5,vwzorkznflimGfmcggtqhqmhydOzbcwkcg
 But the new data looks different:
  UserData(bf30c34b-0ef7-4903-ae28-ae1eb5d3a2a5,vwzorkznflimGfmcggtqhqmhydOzbcwkcgrhdfgkgUerrpuuwcUEhvkxk,Some(-861516569),Some(email@mail.com))
     If you want to accept the changes please delete
- /Users/me/any-golden/golden/src/test/resources/io/yannick_cw/golden/exampleUserData.json and rerun the tests.
+ /Users/me/any-golden/golden/src/test/resources/io/golden/any/exampleUserData.json and rerun the tests.
 ```
 
 Well it still tells us, that our api changed!
@@ -151,7 +151,7 @@ But I actually would write: {
     "name" : "vwzorkznflimGfmcggtqhqmhydOzbcwkcgrhdfgkgUerrpuuwcUEhvkxk"
 }.
     If you want to accept the changes please delete
- /Users/me/any-golden/golden/src/test/resources/io/yannick_cw/golden/exampleUserData.json and rerun the tests.
+ /Users/me/any-golden/golden/src/test/resources/io/golden/any/exampleUserData.json and rerun the tests.
 ```
 
 And that's it. This should give you an easy tool to catch API changes without much effort.
