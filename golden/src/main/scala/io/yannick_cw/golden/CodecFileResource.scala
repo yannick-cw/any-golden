@@ -23,7 +23,7 @@ class FileResource[A](
     codecName: String
 ) extends CodecFileResource[A] {
 
-  override def fileName: String = resourceRootPath ++ nameMatcher
+  override def fileName: String = resourceDir.getCanonicalPath ++ nameMatcher
 
   private val nameMatcher = name ++ "." ++ codecName
   private val separator   = "------------------------------"
@@ -50,7 +50,6 @@ class FileResource[A](
     Resources
       .open(resourceRootPath)
       .flatMap { dirSource =>
-      println(dirSource.getLines().toList)
         val files = dirSource.getLines
           .find {
             case `nameMatcher` => true
