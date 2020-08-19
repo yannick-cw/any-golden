@@ -10,7 +10,8 @@ inThisBuild(
         "yannick.gladow@gmail.com",
         url("https://www.dev-log.me")
       )
-    )
+    ),
+    scalaVersion := "2.13.1"
   )
 )
 

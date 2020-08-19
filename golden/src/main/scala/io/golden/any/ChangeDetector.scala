@@ -1,8 +1,8 @@
 package io.golden.any
 
 import cats.implicits.{catsStdInstancesForTry, toFunctorOps}
-import ChangeDetector.Codec
-import org.scalacheck.util.Pretty
+import io.golden.any.ChangeDetector.Codec
+import io.golden.any.difflib.{AnsiColors, Diffs, Printers}
 import org.scalacheck.{Arbitrary, Prop}
 
 import scala.reflect.runtime.universe.TypeTag
@@ -17,7 +17,7 @@ class ChangeDetector[A](
 ) {
 
   private def resetMessage =
-    s"If you want to accept the changes please delete ${fileResource.fileName} and rerun the tests."
+    s"If you want to accept the changes please delete ${AnsiColors.LightRed}${fileResource.fileName}${AnsiColors.Reset} and rerun the tests."
 
   private def parseFromFile: Try[List[(A, String)]] =
     fileResource.readFromFiles.flatMap {
@@ -29,47 +29,54 @@ class ChangeDetector[A](
   private def generateFile(): Try[List[(A, String)]] = {
     val examples = exampleGen.generateRandomGoldenExamples(numberTests)
 
-  fileResource
+    fileResource
       .writeToFiles(examples.map { case (seed, _, s) => (s, seed) })
       .as(examples.map { case (_, a, s) => (a, s) })
   }
 
-  private def checkPropWriting(x: String, y: String): Prop =
-    if (x == y) Prop.proved
-    else
-      Prop.falsified :| {
-        val exp = Pretty.pretty[Any](y, Pretty.Params(0))
-        val act = Pretty.pretty[Any](x, Pretty.Params(0))
-        s"I expected to write: \n$exp\n\n" + s"But I actually would write: $act."
-      } :| resetMessage
+  private def checkPropWriting(expectedString: String, actualString: String): Prop =
+    checkProp((exp, act) =>
+      s"${AnsiColors.LightGreen}I expected to write:${AnsiColors.CYAN}\n$exp\n" +
+        s"${AnsiColors.RED}But I actually would write:\n$act\n\n${AnsiColors.Reset}"
+    )(expectedString, actualString)
 
-  private def checkPropReading(x: A, y: A): Prop =
-    if (x == y) Prop.proved
-    else
-      Prop.falsified :| {
-        val exp = Pretty.pretty(x, Pretty.Params(0))
-        val act = Pretty.pretty(y, Pretty.Params(0))
-        s"I can still read the old format: \n$exp\n\n" + s"But the new data looks different: $act"
-      } :| resetMessage
+  private def checkPropReading(expectedA: A, actualA: A): Prop =
+    checkProp((exp, act) =>
+      s"${AnsiColors.LightGreen}I can still read the old format:${AnsiColors.CYAN}\n$exp\n" +
+        s"${AnsiColors.RED}But the new data looks different:\n$act\n\n${AnsiColors.Reset}"
+    )(expectedA, actualA)
+
+  private def checkProp[T](msg: (String, String) => String)(expected: T, actual: T): Prop =
+    if (expected == actual) Prop.proved
+    else {
+      val exp = Printers.print(expected)
+      val act = Printers.print(actual)
+      Prop.falsified :| msg(exp, act) ++
+        Diffs.createDiffOnlyReport(exp, act) :| resetMessage
+    }
 
   def prop(): Prop = {
-    // TODO get not cool - or ok?
     val allProps = parseFromFile.get.flatMap {
-      case (a, s) =>
+      case (generatedA, fromFileString) =>
         List(
           codec
-            .read(s)
+            .read(fromFileString)
             .fold(
-              err =>
-                Prop.falsified :| s"Failed reading \n$s\n to $objectName maybe there is a new required field or a field name changed?" :| (err.msg) :| resetMessage,
-              checkPropReading(_, a)
+              err => reportParsingError(fromFileString, err) :| resetMessage,
+              fromFileA => checkPropReading(expectedA = fromFileA, actualA = generatedA)
             ),
-          checkPropWriting(codec.write(a), s)
+          checkPropWriting(expectedString = fromFileString, actualString = codec.write(generatedA))
         )
     }
 
     Prop.all(allProps: _*)
   }
+
+  private def reportParsingError(fromFileString: String, err: ChangeDetector.ReadErr) =
+    Prop.falsified :|
+      s"${AnsiColors.LightRed}Failed reading ${AnsiColors.Bold}\n${Printers.print(fromFileString)}\n${AnsiColors.Reset}" ++
+        s" to ${AnsiColors.GREEN}$objectName${AnsiColors.Reset} maybe there is a new required field or a field name changed?" :|
+      (s"${AnsiColors.RED}${err.msg}${AnsiColors.Reset}")
 }
 
 object ChangeDetector {
@@ -87,6 +94,8 @@ object ChangeDetector {
     */
   def apply[A: TypeTag](implicit codec: Codec[A], arb: Arbitrary[A]): ChangeDetector[A] =
     apply(1)
+
+  // TODO add size parameter
 
   /**
     * @param numberTests How many golden tests to create for A
